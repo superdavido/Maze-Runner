@@ -8,17 +8,60 @@ const SPEED = 4;
 const PLAYER_RADIUS = 0.4;
 
 export function Player() {
-  const { camera } = useThree();
+  const { camera, gl } = useThree();
   const [, getKeys] = useKeyboardControls();
   const torchLight = useRef<THREE.PointLight>(null);
 
   useEffect(() => {
-    camera.position.set(INITIAL_PLAYER_POS[0], 1, INITIAL_PLAYER_POS[2]);
-    // Face +Z direction (down the open corridor away from the starting wall)
+    camera.position.set(INITIAL_PLAYER_POS[0], 1.25, INITIAL_PLAYER_POS[2]);
+    // Face down the long, open corridor from the starting cell.
     camera.rotation.order = 'YXZ';
-    camera.rotation.y = Math.PI;
+    camera.rotation.y = -Math.PI / 2;
     camera.rotation.x = 0;
   }, [camera]);
+
+  useEffect(() => {
+    const canvas = gl.domElement;
+    let dragging = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    const onPointerDown = (event: PointerEvent) => {
+      if (event.button !== 0 || document.pointerLockElement) return;
+      dragging = true;
+      lastX = event.clientX;
+      lastY = event.clientY;
+    };
+    const onPointerMove = (event: PointerEvent) => {
+      if (!dragging || document.pointerLockElement) return;
+      const deltaX = event.clientX - lastX;
+      const deltaY = event.clientY - lastY;
+      lastX = event.clientX;
+      lastY = event.clientY;
+
+      camera.rotation.order = 'YXZ';
+      camera.rotation.y -= deltaX * 0.003;
+      camera.rotation.x = THREE.MathUtils.clamp(
+        camera.rotation.x - deltaY * 0.003,
+        -Math.PI / 2 + 0.05,
+        Math.PI / 2 - 0.05,
+      );
+    };
+    const onPointerUp = () => {
+      dragging = false;
+    };
+
+    canvas.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+    window.addEventListener('pointercancel', onPointerUp);
+    return () => {
+      canvas.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointercancel', onPointerUp);
+    };
+  }, [camera, gl]);
 
   const checkCollision = (newPos: THREE.Vector3) => {
     const pMinX = newPos.x - PLAYER_RADIUS;
@@ -81,7 +124,13 @@ export function Player() {
   return (
     <>
       <PointerLockControls />
-      <pointLight ref={torchLight} color="#ffaa00" intensity={0.8} distance={6} />
+      <pointLight
+        ref={torchLight}
+        color="#ffc36b"
+        intensity={10}
+        distance={14}
+        decay={1.8}
+      />
     </>
   );
 }

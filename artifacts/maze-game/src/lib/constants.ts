@@ -22,13 +22,13 @@ export const WALL_HEIGHT = 2.5;
 export const INITIAL_PLAYER_POS = [1 * CELL_SIZE, 0, 1 * CELL_SIZE];
 
 export const INITIAL_GEMS = [
-  [2,0,2], [10,0,2], [4,0,6], [8,0,6], 
-  [2,0,10], [6,0,8], [12,0,8], [4,0,12], 
-  [10,0,12], [6,0,4], [12,0,4], [8,0,12]
+  [5,0,1], [5,0,3], [7,0,3], [9,0,3],
+  [3,0,5], [1,0,8], [3,0,9], [5,0,9],
+  [7,0,9], [9,0,9], [13,0,7], [13,0,13]
 ].map(([x, y, z]) => [x * CELL_SIZE, y, z * CELL_SIZE]);
 
 export const ENEMY_PATHS = [
-  { start: [4 * CELL_SIZE, 0, 10 * CELL_SIZE], end: [8 * CELL_SIZE, 0, 10 * CELL_SIZE] },
-  { start: [10 * CELL_SIZE, 0, 2 * CELL_SIZE], end: [10 * CELL_SIZE, 0, 6 * CELL_SIZE] },
-  { start: [2 * CELL_SIZE, 0, 13 * CELL_SIZE], end: [10 * CELL_SIZE, 0, 13 * CELL_SIZE] },
+  { start: [3 * CELL_SIZE, 0, 3 * CELL_SIZE], end: [11 * CELL_SIZE, 0, 3 * CELL_SIZE] },
+  { start: [11 * CELL_SIZE, 0, 3 * CELL_SIZE], end: [11 * CELL_SIZE, 0, 7 * CELL_SIZE] },
+  { start: [2 * CELL_SIZE, 0, 13 * CELL_SIZE], end: [12 * CELL_SIZE, 0, 13 * CELL_SIZE] },
 ];

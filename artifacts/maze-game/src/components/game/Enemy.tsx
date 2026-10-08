@@ -1,4 +1,4 @@
-import React, { useRef, useState, useMemo } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -11,8 +11,8 @@ interface EnemyProps {
 
 export function Enemy({ start, end, speed = 2, onHit }: EnemyProps) {
   const meshRef = useRef<THREE.Mesh>(null);
-  const [progress, setProgress] = useState(0);
-  const [direction, setDirection] = useState(1);
+  const progress = useRef(0);
+  const direction = useRef(1);
 
   const startVec = useMemo(() => new THREE.Vector3(...start), [start]);
   const endVec = useMemo(() => new THREE.Vector3(...end), [end]);
@@ -20,15 +20,15 @@ export function Enemy({ start, end, speed = 2, onHit }: EnemyProps) {
 
   useFrame((state, delta) => {
     if (meshRef.current) {
-      let p = progress + (speed * delta * direction) / distance;
+      let p = progress.current + (speed * delta * direction.current) / distance;
       if (p > 1) {
         p = 1;
-        setDirection(-1);
+        direction.current = -1;
       } else if (p < 0) {
         p = 0;
-        setDirection(1);
+        direction.current = 1;
       }
-      setProgress(p);
+      progress.current = p;
 
       const currentPos = new THREE.Vector3().lerpVectors(startVec, endVec, p);
       meshRef.current.position.copy(currentPos);

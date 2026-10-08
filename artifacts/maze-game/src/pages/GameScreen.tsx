@@ -22,6 +22,7 @@ function GameLogic() {
   const { state, collectGem, loseLife, updateTime, endGame } = useGame();
   const [activeGems, setActiveGems] = useState(INITIAL_GEMS.map((pos, i) => ({ id: i, pos })));
   const lastHitTime = useRef(0);
+  const lastShownSecond = useRef(-1);
   const activeGemsRef = useRef(activeGems);
   activeGemsRef.current = activeGems;
 
@@ -29,7 +30,11 @@ function GameLogic() {
     if (state.status !== 'playing') return;
 
     const time = sceneState.clock.elapsedTime;
-    updateTime(Math.floor(time));
+    const elapsedSecond = Math.floor(time);
+    if (elapsedSecond !== lastShownSecond.current) {
+      lastShownSecond.current = elapsedSecond;
+      updateTime(elapsedSecond);
+    }
 
     const playerPos = sceneState.camera.position;
 
@@ -52,8 +57,10 @@ function GameLogic() {
 
   return (
     <>
-      <ambientLight intensity={0.15} color="#4a4a6a" />
-      <directionalLight position={[10, 20, 10]} intensity={0.3} color="#ffeebb" />
+      <color attach="background" args={['#090d18']} />
+      <hemisphereLight args={['#c9dcff', '#252b40', 0.85]} />
+      <ambientLight intensity={0.5} color="#aab9df" />
+      <directionalLight position={[10, 20, 10]} intensity={0.75} color="#ffeebb" />
 
       <Maze />
       <Player />
@@ -99,22 +106,29 @@ export function GameScreen() {
 
   const handleCanvasClick = () => {
     const canvas = canvasWrapperRef.current?.querySelector('canvas');
-    if (canvas && !document.pointerLockElement) {
-      canvas.requestPointerLock();
+    if (canvas && !document.pointerLockElement && canvas.requestPointerLock) {
+      try {
+        const lockRequest = canvas.requestPointerLock();
+        if (lockRequest instanceof Promise) {
+          void lockRequest.catch(() => setIsLocked(false));
+        }
+      } catch {
+        setIsLocked(false);
+      }
     }
   };
 
   return (
-    <div
+      <div
       ref={canvasWrapperRef}
-      className="relative w-full h-screen bg-black overflow-hidden"
+        className="relative w-full h-screen bg-[#090d18] overflow-hidden"
       id="game-container"
       onClick={handleCanvasClick}
     >
       {state.status === 'playing' && <HUD />}
 
       <KeyboardControls map={KEY_BINDINGS}>
-        <Canvas>
+        <Canvas camera={{ fov: 75, near: 0.1, far: 100 }} dpr={[1, 1.5]}>
           <GameLogic />
         </Canvas>
       </KeyboardControls>
@@ -133,7 +147,7 @@ export function GameScreen() {
       {state.status === 'playing' && !isLocked && (
         <div className="pointer-events-none absolute inset-0 z-30 flex items-end justify-center pb-8">
           <div className="bg-black/60 border border-white/20 text-white/80 text-sm font-mono px-4 py-2 rounded-lg">
-            Click to look around
+            Click or drag to look around
           </div>
         </div>
       )}
